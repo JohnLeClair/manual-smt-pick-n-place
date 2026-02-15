@@ -29,6 +29,8 @@ const int PWM_OFF = 0; // Turns off MOSFET powering pump motor.
 const unsigned long defaultPumpShutoffDelay = 10000000;   // 10 seconds before pump shutoff  
 
 // GPIO Input Pins
+// Potentiometer notes (at least with my setup):
+//   - Looking at7 front of 100k pot - left pin GND. Middle pin ADC. Right Pin +5V. 
 const int potAdcPumpSpeedPin = A3;  // Potentiometer output connected to analog pin 3
 const int potAdcDelayPin = A4;
 const int switchFootSwitchPin = 4;  // Digital Status of foot switch 

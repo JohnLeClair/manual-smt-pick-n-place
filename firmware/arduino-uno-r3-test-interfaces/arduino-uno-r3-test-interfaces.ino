@@ -14,19 +14,20 @@
 
                  3) I put very little thought into the design of this software. 
 
- ******************************************************************************/
+ 45******************************************************************************/
 
 const int PWM_OFF = 0; // Turns off MOSFET powering pump motor.
 const int PWM_ON_100_PERCENT = 255; 
+const int PWM_ON = 255;
 
 // GPIO Input Pins
 const int potAdcPumpSpeedPin = A3;  // Analog. Potentiometer output connected to analog pin 3
-const int potAdcDelayPin = A4;      // Analog. Potentiometer out connected to analog pin 4
-const int switchFootSwitchPin = 4;  // Digital. Status of foot switch 
+const int potAdcDelayPin =     A4;  // Analog. Potentiometer out connected to analog pin 4
+const int switchFootSwitchPin = 5;  // Digital. Status of foot switch 
 
 // GPIO Output Pins
-const int mosfetPwmPumpPin = 3;        // PWDM Pump MOSFET driver set to analog pin 0
-const int mosfetEnableVacuumValvePin = 2; // Digital Enable/Disable Vacuum Valve.
+const int mosfetPwmPumpPin           = 3; // PWDM Pump MOSFET driver set to analog pin 0
+const int mosfetEnableVacuumValvePin = 4; // Digital Enable/Disable Vacuum Valve.
 
 // Status variables
 int potPumpSpeedValue = 0;          // ADC Potentiometer Pump Speed Reading
@@ -68,12 +69,11 @@ void loop()
   // Check for depressed foot switch
   footswitchStatus = digitalRead(switchFootSwitchPin);
 
-  // TODO: REMOVE
   analogWrite(mosfetPwmPumpPin, potPumpSpeedValue >> 2); // (scaled from 1024 values to 256 values)
 
   // We need vacuum flow enabled and pump on if not already in this state.
   // Adjust PWM MOSFET pin accordingly.
-  analogWrite(mosfetPwmPumpPin, potPumpSpeedValue >> 2); // (scaled from 1024 values to 256 values)
+//  analogWrite(mosfetPwmPumpPin, potPumpSpeedValue >> 2); // (scaled from 1024 values to 256 values)
 
   Serial.print("potPumpSpeedValue: ");
   Serial.println(potPumpSpeedValue); 
@@ -83,6 +83,10 @@ void loop()
 
   Serial.print("footswitchStatus: ");
   Serial.println(footswitchStatus);
-
   Serial.println("");
+
+  if (potDelayValue > 800)
+    digitalWrite(mosfetEnableVacuumValvePin, HIGH);
+  else 
+    digitalWrite(mosfetEnableVacuumValvePin, LOW);
 }
