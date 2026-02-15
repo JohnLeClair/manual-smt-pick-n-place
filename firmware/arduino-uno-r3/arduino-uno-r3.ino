@@ -12,6 +12,8 @@
 
                  2) Need to install TimerOne library version 1.1.1
 
+                 3) I put very little thought into the design of this software. 
+
  ******************************************************************************/
 #include <TimerOne.h>    // Timer Interrupt Handling
 
@@ -21,15 +23,15 @@
 // from anything real-time. 
 const bool enableDebug = true;  // Set to true to view raw ADC potentiometer readings. 
 
-const int PWM_OFF = 0;
+const int PWM_OFF = 0; // Turns off MOSFET powering pump motor.
 
 // Vacuum Pump Delay
-const unsigned long defaultPumpShutoffDelay = 20000000;   // 10 seconds before pump shutoff  
+const unsigned long defaultPumpShutoffDelay = 10000000;   // 10 seconds before pump shutoff  
 
 // GPIO Input Pins
 const int potAdcPumpSpeedPin = A3;  // Potentiometer output connected to analog pin 3
 const int potAdcDelayPin = A4;
-const int switchFootSwitchPin = A1; // Status of foot switch 
+const int switchFootSwitchPin = 4;  // Digital Status of foot switch 
 
 // GPIO Output Pins
 const int mosfetPwmPumpPin = 3;        // PWDM Pump MOSFET driver set to analog pin 0
