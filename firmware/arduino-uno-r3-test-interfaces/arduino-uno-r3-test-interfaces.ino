@@ -26,8 +26,8 @@ const int potAdcDelayPin =     A4;  // Analog. Potentiometer out connected to an
 const int switchFootSwitchPin = 5;  // Digital. Status of foot switch 
 
 // GPIO Output Pins
-const int mosfetPwmPumpPin           = 3; // PWDM Pump MOSFET driver set to analog pin 0
-const int mosfetEnableVacuumValvePin = 4; // Digital Enable/Disable Vacuum Valve.
+const int mosfetPwmPumpPin           = 3; // PWDM Pump MOSFET 1 driver set to analog pin 0
+const int mosfetEnableVacuumValvePin = 4; // Digital MOSFET 2 Enable/Disable Vacuum Valve.
 
 // Status variables
 int potPumpSpeedValue = 0;          // ADC Potentiometer Pump Speed Reading
