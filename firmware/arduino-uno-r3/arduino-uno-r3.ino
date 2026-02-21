@@ -21,7 +21,7 @@
 // Being a good C++ citizen using const instead of conditionally compiled. The loop() function 
 // can check this flag however times as necessary since this loop is many, many orders of magnitude away
 // from anything real-time. 
-const bool enableDebug = true;  // Set to true to view raw ADC potentiometer readings. 
+const bool enableDebug = false;  // Set to true to view raw ADC potentiometer readings. 
 
 const int PWM_OFF = 0; // Turns off MOSFET powering pump motor.
 
@@ -33,11 +33,11 @@ const unsigned long defaultPumpShutoffDelay = 10000000;   // 10 seconds before p
 //   - Looking at7 front of 100k pot - left pin GND. Middle pin ADC. Right Pin +5V. 
 const int potAdcPumpSpeedPin = A3;  // Potentiometer output connected to analog pin 3
 const int potAdcDelayPin = A4;
-const int switchFootSwitchPin = 4;  // Digital Status of foot switch 
+const int switchFootSwitchPin = 8;  // Digital Status of foot switch 
 
 // GPIO Output Pins
-const int mosfetPwmPumpPin = 3;        // PWDM Pump MOSFET driver set to analog pin 0
-const int mosfetEnableVacuumValvePin = 2; // Digital Enable/Disable Vacuum Valve.
+const int mosfetPwmPumpPin = 3;           // PWDM Pump MOSFET driver set to analog pin 0
+const int mosfetEnableVacuumValvePin = 4; // Digital Enable/Disable Vacuum Valve.
 
 int potPumpSpeedValue = 0;          // ADC Potentiometer Pump Speed Reading
 int potDelayValue = 0;              // ADC Potentioneter Pump Shutoff Delay Reading     
@@ -69,7 +69,7 @@ void setup()
   // Input Pin Configuration
   pinMode(potAdcPumpSpeedPin, INPUT);
   pinMode(potAdcDelayPin, INPUT);  
-  pinMode(switchFootSwitchPin, INPUT); // Switch no depressed, status is high.
+  pinMode(switchFootSwitchPin, INPUT_PULLUP); // Switch activated goes to ground.
 
   // Output Pin Configuration
   pinMode(mosfetPwmPumpPin, OUTPUT);
@@ -78,6 +78,8 @@ void setup()
   // Timer Shutoff Configuration
   Timer1.initialize(defaultPumpShutoffDelay); // Set timer to 1,000,000 microseconds (1 second)
   Timer1.attachInterrupt(ISR_Vacuum_Pump_Shutoff_Delay); // Attach the ISR function
+  Timer1.stop();
+  initialPumpCutoffFlag = true; // Pump is off on device powerup.  
 
   // Starting up device to following states:
   //   - pump motor:  off
@@ -88,9 +90,8 @@ void setup()
   if (enableDebug)
   {
     Serial.begin(9600);
-  } 
+  }
 }
-
 
 // the loop function runs over and over again forever
 // Nothing needs to react super fast - so a simple round robin plus a single ISR
@@ -105,39 +106,35 @@ void loop()
   // Check for depressed foot switch
   footswitchStatus = digitalRead(switchFootSwitchPin);
 
-  // TODO: REMOVE
-  analogWrite(mosfetPwmPumpPin, potPumpSpeedValue >> 2); // (scaled from 1024 values to 256 values)
-
-#if(0) // todo: Enable this when footswitch is hooked up.
+  // Check Foot Switch activation. 
   if (footswitchStatus == HIGH)
   {
-    // We need vacuum flow enabled and pump on if not already in this state.
-    // Adjust PWM MOSFET pin accordingly.
+    // Open the Vacuum Valve 
+    digitalWrite(mosfetEnableVacuumValvePin, HIGH);  
+    
+    // Turn on Pump - if already on and adjust to new potentiometer PWM value. 
     analogWrite(mosfetPwmPumpPin, potPumpSpeedValue >> 2); // (scaled from 1024 values to 256 values)
 
-    footswitchStateChangeDepressed = false;
+    footswitchStateChangeDepressed = true;
 
-    initialPumpCutoffFlag = false; // TODO: maybe share this int footswitchStateChangeDepressed logic. 
+    // We have cycled the pump on now at least once. 
+    initialPumpCutoffFlag = false;
 
     // Disable timer because as long as footswitch is depressed, the pump will always be enabled.
     Timer1.stop();
   }
   else
   {
-    // Footswitch just depressed ?
     if (footswitchStateChangeDepressed)
     {
-      // TODO: probably should do some debouncing here
-      // Restart the pump turn off timer.
-      // convert period for now (TODO from 1024 ADC values, to number of seconds by just mod 100 and then convert to microseconds.
-      // ie: 0 to 10 second delay range. Close enough for now.
-      Timer1.setPeriod(((potDelayValue / 100) + 1) * 1000000); // adding 1 second for good measure. It will come back to haunt me.
-      Timer1.start();
+      // Close the Vacuum Value and drop the SMD part 
+      digitalWrite(mosfetEnableVacuumValvePin, LOW);
+
+      Timer1.setPeriod(((potDelayValue / 100) + 1) * 1000000); // doubling the timer period for good measure. It will come back to haunt me.
 
       footswitchStateChangeDepressed = false;
     }
   }
-#endif
 
   if (enableDebug)
   {

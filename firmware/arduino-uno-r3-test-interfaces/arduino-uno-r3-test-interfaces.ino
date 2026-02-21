@@ -23,7 +23,7 @@ const int PWM_ON = 255;
 // GPIO Input Pins
 const int potAdcPumpSpeedPin = A3;  // Analog. Potentiometer output connected to analog pin 3
 const int potAdcDelayPin =     A4;  // Analog. Potentiometer out connected to analog pin 4
-const int switchFootSwitchPin = 5;  // Digital. Status of foot switch 
+const int switchFootSwitchPin = 8;  // Digital. Status of foot switch 
 
 // GPIO Output Pins
 const int mosfetPwmPumpPin           = 3; // PWDM Pump MOSFET 1 driver set to analog pin 0
@@ -40,7 +40,7 @@ void setup()
   // Input Pin Configuration
   pinMode(potAdcPumpSpeedPin, INPUT);
   pinMode(potAdcDelayPin, INPUT);  
-  pinMode(switchFootSwitchPin, INPUT); // Switch no depressed, status is high.
+  pinMode(switchFootSwitchPin, INPUT_PULLUP); // Depressed switch goes to ground. 
 
   // Output Pin Configuration
   pinMode(mosfetPwmPumpPin, OUTPUT);
@@ -84,6 +84,9 @@ void loop()
   Serial.print("footswitchStatus: ");
   Serial.println(footswitchStatus);
   Serial.println("");
+
+delay(1000);
+
 
   if (potDelayValue > 800)
     digitalWrite(mosfetEnableVacuumValvePin, HIGH);
